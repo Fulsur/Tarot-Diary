@@ -1,6 +1,6 @@
 #the card displaying,the model choose，the answer,
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QLineEdit,QHBoxLayout
 
 class CheckIn:
     def __init__(self):
@@ -15,6 +15,29 @@ class CheckIn:
         # Set up the main layout and widgets here
         self.layout = QVBoxLayout()
         self.label = QLabel("Welcome to the Check In The Tarot Diary!")
+
+        self.account_label = QLabel("Account:")
+        self.account_input = QLineEdit()
+        self.account_layout = QHBoxLayout()
+        self.account_layout.addWidget(self.account_label)
+        self.account_layout.addWidget(self.account_input)
+        
+        self.password_label = QLabel("Password:")
+        self.password_input = QLineEdit()
+        self.password_input.setEchoMode(QLineEdit.Password)
+        self.password_layout = QHBoxLayout()
+        self.password_layout.addWidget(self.password_label)
+        self.password_layout.addWidget(self.password_input)
+
+        self.checkin_button = QPushButton("Check In")
+        self.checkin_button.clicked.connect(self.check_in)
+        self.layout.addWidget(self.label)
+        self.layout.addLayout(self.account_layout)
+        self.layout.addLayout(self.password_layout)
+        self.layout.addWidget(self.checkin_button)
+        container = QWidget()
+        container.setLayout(self.layout)
+        self.window.setCentralWidget(container)
         #add background image
 
     def check_in(self):
