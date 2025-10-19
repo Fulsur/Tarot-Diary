@@ -1,15 +1,23 @@
 #the card displaying,the model choose，the answer,
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QLineEdit,QHBoxLayout
+import Tarot_PostgreSQL as tps
 
 class CheckIn:
     def __init__(self):
         self.window = QMainWindow()
         self.window.setWindowTitle("Check In")
         self.window.setGeometry(100, 100, 400, 300)
+        self.db_manager = tps.TarotPostgreSQLManager(
+            dbname="tarot_diary", 
+            user="your_user",       #replace with actual username
+            password="your_password",       #replace with actual password   
+            host="localhost",
+            port="5432"
+        )
         # Initialize UI components
         self.initUI()
-
+        
 
     def initUI(self):
         # Set up the main layout and widgets here
