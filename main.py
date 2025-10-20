@@ -1,6 +1,7 @@
 #the card displaying,the model choose，the answer,
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QLineEdit,QHBoxLayout, QMessageBox
+from PySide6.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QLineEdit,QHBoxLayout,
+                                QMessageBox,QInputDialog)
 import Tarot_PostgreSQL as tps
 from PySide6.QtCore import Qt
 
@@ -70,8 +71,11 @@ class CheckIn:
         container = QWidget()
         container.setLayout(self.layout)
         self.window.setCentralWidget(container)
+
         if not self.db_manager.connect():
             QMessageBox.critical(self.window, "错误", "无法连接数据库，请检查数据库设置")
+
+        self.db_manager.initialize_database()
 
     def check_in(self):
         """登录验证"""
@@ -97,11 +101,26 @@ class CheckIn:
             QMessageBox.warning(self.window, "登录失败", "用户名或密码错误")
 
     def show_register(self):
-        """register function"""
+        self.new_username, ok = QInputDialog.getText(self.window, "注册新账号", "请输入用户名:")
+        if ok and self.new_username:
+            password, ok = QInputDialog.getText(self.window, "注册新账号", "请输入密码:", QLineEdit.Password)
+            if ok and password:
+                email, ok = QInputDialog.getText(self.window, "注册新账号", "请输入邮箱（可选）:")
+                if ok:
+                    # 创建新用户
+                    user_id = self.db.create_user(self.new_username, password, email if email else None)
+                    if user_id:
+                        QMessageBox.information(self.window, "注册成功", f"用户 {self.new_username} 创建成功！")
+                        # 自动填充登录表单
+                        self.account_input.setText(self.new_username)
+                        self.password_input.setText("")
+                    else:
+                        QMessageBox.warning(self.window, "注册失败", "用户名可能已存在")
         pass
 
     def show(self):
         self.window.show()
+        
 class MainWindow:
     def __init__(self):
         self.window = QMainWindow()
