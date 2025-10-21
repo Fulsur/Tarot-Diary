@@ -1,145 +1,77 @@
-#the card displaying,the model choose，the answer,
+# main.py
+import sys
+import os
+from PySide6.QtWidgets import QApplication, QMessageBox
+from main import FirstRunWizard
+from config_manager import SecureConfigManager
+from main import CheckIn  # 假设这是你的主登录界面
 
-from PySide6.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QLineEdit,QHBoxLayout,
-                                QMessageBox,QInputDialog)
-import Tarot_PostgreSQL as tps
-from PySide6.QtCore import Qt
-
-class CheckIn:
-    def __init__(self):
-        self.window = QMainWindow()
-        self.window.setWindowTitle("Check In")
-        self.window.setGeometry(100, 100, 400, 300)
-        self.db_manager = tps.TarotPostgreSQLManager(
-            dbname="tarot_diary", 
-            user="your_user",       #replace with actual username
-            password="your_password",       #replace with actual password   
-            host="localhost",
-            port="5432"         #         
+def main():
+    app = QApplication(sys.argv)
+    app.setApplicationName("塔罗牌日记")
+    app.setApplicationVersion("1.0.0")
+    
+    # 初始化配置管理器
+    config_manager = SecureConfigManager()
+    
+    # 检查是否是第一次运行
+    if not config_manager.config_exists():
+        # 显示首次运行向导
+        wizard = FirstRunWizard()
+        if wizard.exec() != FirstRunWizard.Accepted:
+            # 用户取消了设置
+            print("用户取消了首次设置")
+            return 1
+    
+    # 加载数据库配置
+    db_config = config_manager.load_database_config()
+    if not db_config:
+        QMessageBox.critical(
+            None, 
+            "配置错误", 
+            "无法加载数据库配置。\n"
+            "请重新运行首次设置向导。"
         )
-        # Initialize UI components
-        self.main_window = None
-        self.initUI()
+        return 1
+    
+    try:
+        # 创建数据库管理器并连接
+        from Tarot_PostgreSQL import TarotPostgreSQLManager
+        db_manager = TarotPostgreSQLManager(
+            dbname=db_config['dbname'],
+            user=db_config['user'],
+            password=db_config['password'],
+            host=db_config['host'],
+            port=db_config['port']
+        )
         
-
-    def initUI(self):
-        # Set up the main layout and widgets here
-        self.layout = QVBoxLayout()
-        self.label = QLabel("Welcome to the Check In The Tarot Diary!")
-        self.label.setAlignment(Qt.AlignCenter)
-        self.label.setStyleSheet("font-size: 16px; font-weight: bold;")
-
-        # Account input
-        self.account_label = QLabel("Account:")
-        self.account_label.setAlignment(Qt.AlignCenter)
-        self.account_label.setStyleSheet("font-size: 14px;")
-        self.account_input = QLineEdit()
-        self.account_layout = QHBoxLayout()
-        self.account_layout.addWidget(self.account_label)
-        self.account_layout.addWidget(self.account_input)
-        
-        # Password input
-        self.password_label = QLabel("Password:")
-        self.password_label.setAlignment(Qt.AlignCenter)
-        self.password_label.setStyleSheet("font-size: 14px;")
-        self.password_input = QLineEdit()
-        self.password_input.setEchoMode(QLineEdit.Password)
-        self.password_layout = QHBoxLayout()
-        self.password_layout.addWidget(self.password_label)
-        self.password_layout.addWidget(self.password_input)
-
-        # Check-in button
-        self.checkin_button = QPushButton("Check In")
-        self.checkin_button.setStyleSheet("font-size: 14px;")
-        self.checkin_button.clicked.connect(self.check_in)
-
-        # Register button
-        self.register_button = QPushButton("Register")
-        self.register_button.setStyleSheet("font-size: 14px;")
-        self.register_button.clicked.connect(self.show_register)
-
-        # Add widgets to the layout
-        self.layout.addWidget(self.label)
-        self.layout.addLayout(self.account_layout)
-        self.layout.addLayout(self.password_layout)
-        self.layout.addWidget(self.checkin_button)
-        self.layout.addWidget(self.register_button)
-        #add background image
-
-
-        # Set the central widget
-        container = QWidget()
-        container.setLayout(self.layout)
-        self.window.setCentralWidget(container)
-
-        if not self.db_manager.connect():
-            QMessageBox.critical(self.window, "错误", "无法连接数据库，请检查数据库设置")
-
-        self.db_manager.initialize_database()
-
-    def check_in(self):
-        """登录验证"""
-        self.username = self.account_input.text().strip()
-        self.password = self.password_input.text().strip()
-
-        if not self.username or not self.password:
-            QMessageBox.warning(self.window, "输入错误", "请输入账号和密码")
-            return
-        
-        # 验证用户
-        user = self.db_manager.verify_user(self.username, self.password)
-        
-        if user:
-            # 登录成功
-            QMessageBox.information(self.window, "登录成功", f"欢迎回来，{user['username']}！")
+        if db_manager.connect():
+            # 显示主登录界面
+            checkin_window = CheckIn(db_config)
+            checkin_window.show()
             
-            # 创建并显示主窗口
-            self.main_window = MainWindow(user, self.db)
-            self.main_window.show()
-            self.window.hide()
+            return app.exec()
         else:
-            QMessageBox.warning(self.window, "登录失败", "用户名或密码错误")
-
-    def show_register(self):
-        self.new_username, ok = QInputDialog.getText(self.window, "注册新账号", "请输入用户名:")
-        if ok and self.new_username:
-            password, ok = QInputDialog.getText(self.window, "注册新账号", "请输入密码:", QLineEdit.Password)
-            if ok and password:
-                email, ok = QInputDialog.getText(self.window, "注册新账号", "请输入邮箱（可选）:")
-                if ok:
-                    # 创建新用户
-                    user_id = self.db.create_user(self.new_username, password, email if email else None)
-                    if user_id:
-                        QMessageBox.information(self.window, "注册成功", f"用户 {self.new_username} 创建成功！")
-                        # 自动填充登录表单
-                        self.account_input.setText(self.new_username)
-                        self.password_input.setText("")
-                    else:
-                        QMessageBox.warning(self.window, "注册失败", "用户名可能已存在")
-        pass
-
-    def show(self):
-        self.window.show()
-        
-class MainWindow:
-    def __init__(self):
-        self.window = QMainWindow()
-        self.window.setWindowTitle("My Tarot Diary")
-        self.window.setGeometry(100, 100, 800, 600)
-        self.window.resize(1440, 900)
-        # Initialize UI components
-        self.initUI()
-
-    def initUI(self):
-        # Set up the main layout and widgets here
-
-        pass
-
-    def show(self):
-        self.window.show()
+            QMessageBox.critical(
+                None, 
+                "连接失败", 
+                "无法连接到数据库。\n"
+                "请检查:\n"
+                "1. 数据库服务是否运行\n"
+                "2. 网络连接是否正常\n"
+                "3. 配置信息是否正确\n\n"
+                "您可能需要重新配置数据库连接。"
+            )
+            return 1
+            
+    except Exception as e:
+        QMessageBox.critical(
+            None, 
+            "启动错误", 
+            f"应用程序启动失败:\n{str(e)}\n\n"
+            "请尝试重新运行首次设置向导。"
+        )
+        return 1
 
 if __name__ == "__main__":
-    app = QApplication([])
-    checkin_window = CheckIn()
-    checkin_window.show()
-    app.exec()
+    sys.exit(main())
