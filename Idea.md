@@ -1,7 +1,13 @@
-Python全栈桌面:
-  深度学习：TensorFlow/Keras
-  数据库：PostgreSQL/SQLite，SQLALchemy
-  前端：PySide6
+# Design for Windows
 
-Web:
-  前端：JavaScript
+## FirstRunWizard
+
+---
+
+## CheckIn
+
+---
+
+## MainWindow
+
+主界面功能：添加新问题；添加新牌阵；查询牌面；查询历史；
