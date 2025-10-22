@@ -293,7 +293,6 @@ class FirstRunWizard(QDialog):
                                "配置已保存，但您需要手动创建数据库表。")
             self.accept()
 
-
 class CheckIn():
     def __init__(self, db_config):
         self.window = QMainWindow()
@@ -410,7 +409,7 @@ class CheckIn():
     def show(self):
         self.window.show()
         
-class MainWindow:
+class MainWindow():
     def __init__(self, user, db_manager):
         self.window = QMainWindow()
         self.window.setWindowTitle("My Tarot Diary")
@@ -421,7 +420,47 @@ class MainWindow:
 
     def initUI(self):
         # Set up the main layout and widgets here
+        add_new_question_button = QPushButton("Add New Question")
+        add_new_question_button.setStyleSheet("font-size: 14px;")
+        add_new_question_button.clicked.connect(self.add_new_question)
 
+        add_new_spreads_button = QPushButton("Add New Spreads")
+        add_new_spreads_button.setStyleSheet("font-size: 14px;")
+        add_new_spreads_button.clicked.connect(self.add_new_spreads)
+        get_spreads_button = QPushButton("Get Spreads")
+        get_spreads_button.setStyleSheet("font-size: 14px;")
+        get_spreads_button.clicked.connect(self.get_spreads)
+        spreads_layout = QHBoxLayout()
+        spreads_layout.addWidget(add_new_spreads_button)
+        spreads_layout.addWidget(get_spreads_button)
+
+        get_cards_button = QPushButton("Get Cards")
+        get_cards_button.setStyleSheet("font-size: 14px;")
+        get_cards_button.clicked.connect(self.get_cards)
+
+        get_history_readings_button = QPushButton("Get History Readings")
+        get_history_readings_button.setStyleSheet("font-size: 14px;")
+        get_history_readings_button.clicked.connect(self.get_history_readings)
+
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(add_new_question_button)
+        self.layout.addLayout(spreads_layout)
+        self.layout.addWidget(get_cards_button)
+        self.layout.addWidget(get_history_readings_button)
+
+    def add_new_question(self):
+        pass
+
+    def add_new_spreads(self):
+        pass
+
+    def get_spreads(self):
+        pass
+
+    def get_cards(self):
+        pass
+
+    def get_history_readings(self):
         pass
 
     def show(self):
