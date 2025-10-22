@@ -1,7 +1,7 @@
 #the card displaying,the model choose，the answer,
 
 from PySide6.QtWidgets import (QApplication, QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QLineEdit,QHBoxLayout,
-                                QMessageBox,QInputDialog, QDialog, QGroupBox, QFormLayout,QCheckBox, QProgressBar)
+                                QMessageBox,QInputDialog, QDialog, QGroupBox, QFormLayout,QCheckBox, QProgressBar,QComboBox)
 import Tarot_PostgreSQL as tps
 from PySide6.QtCore import Qt, QTimer
 import psycopg2
@@ -420,7 +420,7 @@ class MainWindow():
 
     def initUI(self):
         # Set up the main layout and widgets here
-        add_new_question_button = QPushButton("Add New Question")
+        add_new_question_button = QPushButton("Tarot Reading")
         add_new_question_button.setStyleSheet("font-size: 14px;")
         add_new_question_button.clicked.connect(self.add_new_question)
 
@@ -448,7 +448,7 @@ class MainWindow():
         self.layout.addWidget(get_cards_button)
         self.layout.addWidget(get_history_readings_button)
 
-    def add_new_question(self):
+    def tarot_reading(self):
         pass
 
     def add_new_spreads(self):
@@ -465,6 +465,41 @@ class MainWindow():
 
     def show(self):
         self.window.show()
+
+class TarotReadingWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Tarot Reading")
+        self.setGeometry(100, 100, 400, 300)
+        self.initUI()
+
+    def initUI(self):
+        self.choose_spread = QComboBox()
+        self.choose_spread.addItems(["Spread 1", "Spread 2", "Spread 3"])
+
+        self.choose_spreadbackground = QComboBox()
+        self.choose_spreadbackground.addItems(["Background 1", "Background 2", "Background 3"])
+
+        self.show_spread_button = QPushButton("Show Spread")
+        self.show_spread_button.clicked.connect(self.show_spread)
+
+        self.record_question_text = QLineEdit()
+        self.record_question_text.setPlaceholderText("Enter your question here")
+
+        self.spread_reading_text = QLineEdit()
+        self.spread_reading_text.setPlaceholderText("Enter your reading here")
+        
+        self.layout = QVBoxLayout()
+        self.setLayout(self.layout)
+        self.layout.addWidget(self.choose_spread)
+        self.layout.addWidget(self.choose_spreadbackground)
+        self.layout.addWidget(self.show_spread_button)
+        self.layout.addWidget(self.record_question_text)
+        self.layout.addWidget(self.spread_reading_text)
+
+    def show_spread(self):
+        
+        pass
 
 if __name__ == "__main__":
     app = QApplication([])
